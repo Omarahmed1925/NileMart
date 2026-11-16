@@ -1,42 +1,50 @@
 package org.route;
 
+import org.route.Pricing.PricingService;
+import org.route.Pricing.PromotionalPricingService;
+import org.route.Pricing.StandardPricingService;
+import org.route.Repository.InMemoryProductRepository;
+import org.route.Repository.ProductRepository;
+import org.route.Service.ProductService;
+import org.route.model.Product;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Main {
-    void main(){
+    public static void main(String[] args) {
+        InMemoryProductRepository productRepository = new InMemoryProductRepository();
+        productRepository.init();
+        PricingService pricingService = new StandardPricingService();
+        PricingService promotionalPricingService = new PromotionalPricingService();
+        ProductService productService = new ProductService(productRepository, pricingService);
+        ProductService promotionalProductService = new ProductService(productRepository, promotionalPricingService);
 
-        //        var context = new ClassPathXmlApplicationContext("beans.xml");
+        // pricing prints
+        System.out.println(productService.getPrice("ACC-CHG-20W", 2));
+        System.out.println(promotionalProductService.getPrice("ACC-CHG-20W", 2));
 
+        System.out.println("\n");
+        // groupByCategory key prints
+        System.out.println(productService.groupByCategory().keySet());
+        System.out.println("\n");
 
-//        StandardPricingService standard = context.getBean(StandardPricingService.class);
-//        StandardPricingService standard2 = context.getBean(StandardPricingService.class);
+        // out of stock search result
+        System.out.println(productService.search(product -> product.getStockQuantity() == 0));
 
-//        ProductService p = context.getBean(ProductService.class);
-//
-//        System.out.println(p);
+        System.out.println("\n");
+        // product equality test
+        Product p1 = productService.findBySku("ACC-CHG-20W");
+        Product p2 = productService.findBySku("ACC-CHG-20W");
+        Set<Product> products = new HashSet<>();
+        products.add(p1);
+        products.add(p2);
+        System.out.println(products.size());
+        System.out.println(p1.equals(p2));
 
-        var context = new AnnotationConfigApplicationContext(AppConfig.class);
-//        var context2 = new AnnotationConfigApplicationContext(AppConfig.class);
-
-//        StandardPricingService standard = context.getBean(StandardPricingService.class);
-//        StandardPricingService standard2 = context2.getBean(StandardPricingService.class);
-
-//        System.out.println(standard == standard2);
-//        ProductService p = context.getBean(ProductService.class);
-//        System.out.println(standard);
-
-        ProductService productService = context.getBean(ProductService.class);
-
-        System.out.println(productService);
-
-        Product product = Product.builder()
-                .price(BigDecimal.valueOf(100))
-                .build();
-
-        System.out.println(productService.getPrice("PH-SAM-S25", 2));
+        System.out.println("\n");
 
     }
 }

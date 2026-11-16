@@ -1,7 +1,7 @@
-package org.route;
-
-import org.springframework.stereotype.Controller;
-
-@Controller
-public class ProductController {
-}
+//package org.route;
+//
+//import org.springframework.stereotype.Controller;
+//
+//@Controller
+//public class ProductController {
+//}
