@@ -1,5 +1,6 @@
 package org.route.Service;
 
+import lombok.RequiredArgsConstructor;
 import org.route.Pricing.PricingService;
 import org.route.Repository.ProductRepository;
 import org.route.common.Check;
@@ -7,6 +8,7 @@ import org.route.common.NotFoundException;
 import org.route.common.OutOfStockException;
 import org.route.model.Category;
 import org.route.model.Product;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -15,15 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
+@Service
+@RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final PricingService pricingService;
 
-    public ProductService(ProductRepository productRepository, PricingService pricingService) {
-        this.productRepository = productRepository;
-        this.pricingService = pricingService;
-    }
+
     public List<Product> findAll() {
         return productRepository.findAll()
                 .stream()

@@ -10,14 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
+@Repository
 public class InMemoryProductRepository implements ProductRepository {
     // used concurrent hashmap to avoid concurrency issues in case of multiple threads accessing the repository
     private final Map<String, Product> products = new ConcurrentHashMap<>();
 
-    public void init(){
+    @PostConstruct
+    public void init() {
         products.put("PH-X5-128", new Product("PH-X5-128", 12, "Smartphone X5 128GB", new BigDecimal("16000.00"), Category.ELECTRONICS));
 
         products.put("ACC-CHG-20W", new Product("ACC-CHG-20W", 40, "Fast Charger 20W", new BigDecimal("650.00"), Category.ELECTRONICS));

@@ -7,3 +7,16 @@ Q2-no i don't have to do so since the pricing implementation is injected into th
 Q3-The manualWiring(main) would be responsible for creating all new 60 classes.
 
 Q4- changing the sku will result in changing the hashkey so HashMap may fail to find the product
+
+
+Second Stage Questions:-
+
+Q1-The Spring beans are AppConfig, StandardPricingService, PromotionalPricingService, InMemoryProductRepository, and ProductService, Because they are registered through Spring annotations and component scanning.
+Classes such as Product, Category, Money, Check, and the exception classes are not beans because they are not registered or managed by the Spring container.
+Interfaces such as PricingService and ProductRepository are not beans themselves; their implementations are.
+
+Q2-Removing @Primary causes a NoUniqueBeanDefinitionException because Spring finds two beans implementing PricingService: standardPricingService and promotionalPricingService,
+and cannot determine which one to inject.
+
+Q3-Component scan finds beans and creates beanDefinitons for them but it doesnt create instances of the beans.
+The Spring container creates instances of the beans based on the bean definitions during the application context initialization.
