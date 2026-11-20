@@ -1,9 +1,16 @@
 package org.route.Repository;
 
+import jakarta.annotation.PreDestroy;
+import org.route.common.StoreException;
 import org.route.model.Category;
 import org.route.model.Product;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,29 +21,47 @@ import java.util.concurrent.ConcurrentHashMap;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
+import javax.xml.catalog.Catalog;
+
 @Repository
+@Scope("singleton")
 public class InMemoryProductRepository implements ProductRepository {
     // used concurrent hashmap to avoid concurrency issues in case of multiple threads accessing the repository
     private final Map<String, Product> products = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
-        products.put("PH-X5-128", new Product("PH-X5-128", 12, "Smartphone X5 128GB", new BigDecimal("16000.00"), Category.ELECTRONICS));
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(getClass().getClassLoader().getResourceAsStream("products.csv")))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 5) {
+                    String sku = parts[0].trim();
+                    String name = parts[1].trim();
+                    BigDecimal price = new BigDecimal(parts[3].trim());
+                    Category category = Category.valueOf(parts[2].trim().toUpperCase());
+                    int stockQuantity = Integer.parseInt(parts[4].trim());
 
-        products.put("ACC-CHG-20W", new Product("ACC-CHG-20W", 40, "Fast Charger 20W", new BigDecimal("650.00"), Category.ELECTRONICS));
+                    Product product = new Product(sku, stockQuantity, name, price, category);
+                    products.put(sku, product);
+                }
+            }
+            System.out.println("Catalog loaded: " + products.size() + " products.");
 
-        products.put("ACC-BUDS-6", new Product("ACC-BUDS-6", 8, "Wireless Earbuds", new BigDecimal("1100.00"), Category.ELECTRONICS));
 
-        products.put("FSH-GAL-001", new Product("FSH-GAL-001", 25, "Cotton Galabeya", new BigDecimal("900.00"), Category.FASHION));
 
-        products.put("HOM-PAN-28", new Product("HOM-PAN-28", 3, "Non-stick Frying Pan 28cm", new BigDecimal("1200.00"), Category.HOME_KITCHEN));
+        } catch (IOException cause) {
+            throw new StoreException("The catalog could not be loaded.", cause);
+        } catch (NullPointerException cause) {
+            throw new StoreException("The catalog could not be loaded. The file 'products.csv' was not found.", cause);
+        }
 
-        products.put("HOM-SPC-RCK", new Product("HOM-SPC-RCK", 10, "Wooden Spice Rack", new BigDecimal("750.00"), Category.HOME_KITCHEN));
-
-        products.put("BTY-SUN-50", new Product("BTY-SUN-50", 0, "Sun Cream SPF50", new BigDecimal("350.00"), Category.BEAUTY));
-
-        products.put("BK-CAI-TRI", new Product("BK-CAI-TRI", 15, "The Cairo Trilogy", new BigDecimal("450.00"), Category.BOOKS));
-
+    }
+    @PreDestroy
+    public void destroy() {
+        System.out.println("Catalog Closed.");
     }
 
     @Override

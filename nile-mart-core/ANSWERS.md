@@ -81,3 +81,27 @@ channel(), address(), and supports() without modifying
 SmsNotificationSender or EmailNotificationSender.
 
 This demonstrates the Open/Closed Principle.
+
+## Checkpoint 4 — Shopping Cart & Bean Lifecycle
+
+### Q1: Why does ProductService return the same object while ShoppingCart returns different objects?
+
+Because the scope is by default singleton, which creates one bean object per application context or container. ShoppingCart uses prototype scope, so it creates a new object for every getBean() call.
+
+### Q2: Does @PostConstruct execute once or every time we call getBean()? Why?
+
+Once, because the scope is singleton, as it's executed on every new bean. But since it's singleton, it will result always in the same bean.
+
+### Q3: What goes wrong if a singleton service keeps a ShoppingCart in a constructor parameter?
+
+It will create it once and users will use the same object, as singleton calls its constructor once, so the cart will be injected once and it uses the same object because prototype creates a new bean during getBean(), not during using an existing one.
+
+A new cart should be requested from the Spring container for each customer using ObjectProvider or getBean().
+
+### Q4: Why do we use getOrDefault(sku, 0) instead of get(sku)?
+
+Because if the SKU doesn't exist, it returns 0, and if it exists, it returns the quantity.
+
+### Q5: Why did we choose LinkedHashMap instead of HashMap?
+
+Because LinkedHashMap preserves the insertion order.

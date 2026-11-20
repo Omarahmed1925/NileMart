@@ -69,9 +69,6 @@ public class ProductService {
                 .collect(Collectors.groupingBy(Product::getCategory, () -> new EnumMap<>(Category.class), Collectors.toList()));
     }
 
-    public BigDecimal getProductPrice(String sku, int qty){
-        Product product = findBySku(sku);
-        return pricingService.getPrice(product, qty);
-    }
+
 
 }

@@ -1,14 +1,10 @@
 package org.route;
 
+import org.route.Cart.ShoppingCart; // Adjust package if needed
+import org.route.Service.ProductService;
 import org.route.config.AppConfig;
 import org.route.model.Customer;
-import org.route.model.Governorate;
-import org.route.notification.NotificationSender;
-import org.route.shipping.PushNotificationSender;
-import org.route.shipping.ShippingQuoteService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import java.math.BigDecimal;
 
 public class Main {
 
@@ -17,59 +13,46 @@ public class Main {
         try (AnnotationConfigApplicationContext context =
                      new AnnotationConfigApplicationContext(AppConfig.class)) {
 
-            ShippingQuoteService shippingService =
-                    context.getBean(ShippingQuoteService.class);
+            // 1. Test singleton vs prototype
+            ProductService service1 = context.getBean(ProductService.class);
+            ProductService service2 = context.getBean(ProductService.class);
 
-            // TEST 1: Cairo -> Free shipping
-            BigDecimal cairoShipping = shippingService.quote(
-                    Governorate.CAIRO,
-                    new BigDecimal("5000.00")
-            );
+            ShoppingCart cart1 = context.getBean(ShoppingCart.class);
+            ShoppingCart cart2 = context.getBean(ShoppingCart.class);
 
-            System.out.println("Cairo shipping: " + cairoShipping);
+            System.out.println("ProductService singleton: " + (service1 == service2));
+            System.out.println("ShoppingCart prototype: " + (cart1 == cart2));
 
-            // TEST 2: Matrouh -> Normal shipping
-            BigDecimal matrouhShipping = shippingService.quote(
-                    Governorate.MATROUH,
-                    new BigDecimal("999999.00")
-            );
+            cart1.open("CART-001", new Customer(
+                    "Ahmed", "01012345678", "ahmed@gmail.com"));
 
-            System.out.println("Matrouh shipping: " + matrouhShipping);
+            cart2.open("CART-002", new Customer(
+                    "Ali", "01112345678", null));
+            // 3. Add products
+            cart1.addItem("ACC-CHG-20W", 2);
+            cart1.addItem("FSH-GAL-001", 1);
 
-            // TEST 3: Customer with email
-            Customer customer1 = new Customer(
-                    "Ahmed",
-                    "01012345678",
-                    "ahmed@gmail.com"
-            );
+            cart2.addItem("ACC-BUDS-6", 3);
 
-            System.out.println("\nCustomer with email:");
+            // 4. Test snapshots
+            System.out.println("\nCart 1:");
+            System.out.println(cart1.view());
 
-            for (NotificationSender sender :
-                    context.getBeansOfType(NotificationSender.class).values()) {
+            System.out.println("\nCart 2:");
+            System.out.println(cart2.view());
 
-                sender.sendNotification(customer1, "Order confirmed!");
-            }
+            // 5. Test merged quantities
+            cart1.addItem("ACC-CHG-20W", 1);
 
-            // TEST 4: Customer without email
-            Customer customer2 = new Customer(
-                    "Ali",
-                    "01112345678",
-                    null
-            );
+            System.out.println("\nCart 1 after adding another charger:");
+            System.out.println(cart1.view());
 
-            System.out.println("\nCustomer without email:");
+            // 6. Test clear()
+            cart2.clear();
 
-            for (NotificationSender sender :
-                    context.getBeansOfType(NotificationSender.class).values()) {
-
-                sender.sendNotification(customer2, "Order confirmed!");
-            }
-
-            PushNotificationSender push =
-                    context.getBean(PushNotificationSender.class);
-
-            push.sendNotification(customer1, "Order confirmed!");
+            System.out.println("\nCart 2 empty after clear: " + cart2.isEmpty());
         }
+
+        // @PreDestroy should print "Catalog closed." here
     }
 }

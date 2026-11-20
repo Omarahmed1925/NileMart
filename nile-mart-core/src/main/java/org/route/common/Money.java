@@ -9,6 +9,7 @@ import java.util.Locale;
 public final class Money {
 
     private Money() {}
+    public static final BigDecimal ZERO = new BigDecimal("0.00");
 
     public static BigDecimal scale(BigDecimal money) {
         return money.setScale(2, RoundingMode.HALF_UP);
