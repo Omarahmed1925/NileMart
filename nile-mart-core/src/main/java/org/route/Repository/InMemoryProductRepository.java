@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
-import javax.xml.catalog.Catalog;
 
 @Repository
 @Scope("singleton")
@@ -61,7 +60,7 @@ public class InMemoryProductRepository implements ProductRepository {
     }
     @PreDestroy
     public void destroy() {
-        System.out.println("Catalog Closed.");
+        System.out.println("Catalog closed.");
     }
 
     @Override

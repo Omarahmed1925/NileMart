@@ -18,7 +18,7 @@ public class PromotionalPricingService implements PricingService {
     @Override
     public BigDecimal getPrice(Product product, int quantity) {
         return Money.scale(
-                product.getProductPrice()
+                product.getPrice()
                         .multiply(BigDecimal.valueOf(quantity))
                         .multiply(BigDecimal.ONE.subtract(discountPercentage))
         );

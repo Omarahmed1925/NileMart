@@ -11,7 +11,7 @@ public class OutOfStockException extends StoreException{
     }
 
     @Override
-    public int getStatusCode() {
+    public int status() {
         return 409;
     }
 }

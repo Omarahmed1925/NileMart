@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,7 +34,9 @@ public class OrderRegistry {
         return orders.stream().filter(order -> order.orderNumber().equals(orderNumber)).findFirst();
     }
     public List<Order> findAll(){
-        return List.copyOf(orders.reversed());
+        List<Order> reversedOrders = new ArrayList<>(orders);
+        Collections.reverse(reversedOrders);
+        return List.copyOf(reversedOrders);
     }
     public BigDecimal revenue(){
         return orders.stream().map(order -> order.total()).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -40,7 +44,7 @@ public class OrderRegistry {
 
     @PreDestroy
     public void daySummary(){
-        System.out.println("End of day " + orders.size() + "Orders, total revenue: " + Money.format(revenue()));
+        System.out.println("End of day: " + orders.size() + " orders, total revenue: " + Money.format(revenue()));
     }
 
 }

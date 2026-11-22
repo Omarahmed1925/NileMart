@@ -14,7 +14,6 @@ import org.route.notification.NotificationSender;
 import org.route.shipping.ShippingQuoteService;
 import org.springframework.stereotype.Service;
 
-import javax.swing.border.AbstractBorder;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -29,45 +28,44 @@ public class CheckoutService {
 
     public Quote quote(ShoppingCart cart, Governorate g) {
         if (cart == null || cart.isEmpty()) {
-            throw new StoreException("Cart cannot be empty");
+            throw new StoreException("Your cart is empty. Add a product before checking out.");
         }
         BigDecimal subTotal = cart.subtotal();
         BigDecimal vat = taxCalculator.calculate(subTotal);
-        BigDecimal shippingCost = shippingQuoteService.quote(g, subTotal);
-        BigDecimal total = subTotal.add(vat).add(shippingCost);
-        return new Quote(subTotal, vat, shippingCost, total);
+        BigDecimal shippingFee = shippingQuoteService.quote(g, subTotal);
+        BigDecimal total = subTotal.add(vat).add(shippingFee);
+        return new Quote(subTotal, vat, shippingFee, total);
     }
 
     public synchronized Order placeOrder(ShoppingCart cart, Governorate g) {
         if (cart == null || cart.isEmpty()) {
-            throw new StoreException("Cart cannot be empty");
+            throw new StoreException("Your cart is empty. Add a product before checking out.");
         }
+        // Verify every line first so a failure never leaves stock partially reduced.
         cart.getLines().forEach((sku, quantity) -> {
             Product product = productService.findBySku(sku);
 
             if (product.getStockQuantity() < quantity) {
-                throw new OutOfStockException("Not enough stock");
+                throw new OutOfStockException(
+                        "Only " + product.getStockQuantity() + " available for " + product.getName() + ".");
             }
         });
         Quote q = quote(cart, g);
         cart.getLines().forEach((sku, quantity) -> productService.reduceStock(sku, quantity));
-        List orderLines = cart.getLines().entrySet().stream()
+        List<OrderLine> orderLines = cart.getLines().entrySet().stream()
                 .map(entry -> {
                     Product product = productService.findBySku(entry.getKey());
-                    BigDecimal linePrice = product.getProductPrice().multiply(BigDecimal.valueOf(entry.getValue()));
-                    return new OrderLine(product.getSku(), product.getName(), entry.getValue(), linePrice.doubleValue());
+                    BigDecimal linePrice = productService.getPrice(entry.getKey(), entry.getValue());
+                    return new OrderLine(product.getSku(), product.getName(), entry.getValue(), linePrice);
                 })
                 .toList();
-        Order order = new Order(orderRegistry.nextNumber(), cart.getCustomer(),g, orderLines, q.subtotal(), q.vat(), q.shippingCost(), q.total());
+        Order order = new Order(orderRegistry.nextNumber(), cart.getCustomer(), g, orderLines,
+                q.subtotal(), q.vat(), q.shippingFee(), q.total());
         orderRegistry.save(order);
         String message = "Order " + order.orderNumber()
                 + " confirmed. Total " + Money.format(order.total());
-        notificationSenders.forEach(sender -> sender.sendNotification(order.customer(),message));
+        notificationSenders.forEach(sender -> sender.sendNotification(order.customer(), message));
         cart.clear();
         return order;
     }
-
-
-
-
 }

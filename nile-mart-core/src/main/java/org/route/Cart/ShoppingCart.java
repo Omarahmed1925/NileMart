@@ -23,7 +23,7 @@ public class ShoppingCart {
     private final ProductService productService;
     private final int MAX_ITEMS;
     @Getter
-    private String cartNumber;
+    private int cartNumber;
     @Getter
     private Customer customer;
     private LinkedHashMap<String, Integer> lines = new LinkedHashMap<>();
@@ -33,10 +33,10 @@ public class ShoppingCart {
         this.MAX_ITEMS = maxItems;
     }
 
-    public void open(String cartNumber, Customer customer) {
+    public void open(int cartNumber, Customer customer) {
 
-        if (this.cartNumber != null) {
-            throw new IllegalStateException("org.route.Cart is already opened");
+        if (this.customer != null) {
+            throw new IllegalStateException("This cart is already open.");
         }
 
         this.cartNumber = cartNumber;
@@ -46,19 +46,19 @@ public class ShoppingCart {
     public synchronized void addItem(String sku, int quantity) {
 
         if (quantity < 1) {
-            throw new StoreException("Invalid quantity: " + quantity);
+            throw new StoreException("Quantity must be at least 1.");
         }
         Product product = productService.findBySku(sku);
 
         if (product.getStockQuantity() <= 0) {
-            throw new OutOfStockException(product.getName() + " is out of stock ");
+            throw new OutOfStockException(product.getName() + " is out of stock.");
         }
         int newQuantity = lines.getOrDefault(sku, 0) + quantity;
         if (newQuantity > MAX_ITEMS) {
-            throw new StoreException("Cannot add more than " + MAX_ITEMS + " items of product: " + product.getName());
+            throw new StoreException("You can add at most " + MAX_ITEMS + " units of " + product.getName() + " to a cart.");
         }
         if (newQuantity > product.getStockQuantity()) {
-            throw new OutOfStockException("Not enough stock for product: " + product.getName());
+            throw new OutOfStockException("Only " + product.getStockQuantity() + " available for " + product.getName() + ".");
         }
         lines.put(sku, newQuantity);
 

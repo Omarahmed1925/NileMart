@@ -64,7 +64,7 @@ public class ProductService {
                 .toList();
     }
     public Map<Category, List<Product>> groupByCategory(){
-        return productRepository.findAll()
+        return findAll()
                 .stream()
                 .collect(Collectors.groupingBy(Product::getCategory, () -> new EnumMap<>(Category.class), Collectors.toList()));
     }

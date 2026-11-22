@@ -8,7 +8,7 @@ public class StoreException extends RuntimeException{
         super(message, cause);
     }
 
-    public int getStatusCode() {
+    public int status() {
         return 400;
     }
 }

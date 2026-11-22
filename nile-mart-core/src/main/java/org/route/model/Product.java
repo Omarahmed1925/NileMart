@@ -14,7 +14,7 @@ public class Product {
     @Setter
     private int stockQuantity;
     private String name;
-    private BigDecimal productPrice;
+    private BigDecimal price;
     private Category category;
 
 

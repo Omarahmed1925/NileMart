@@ -1,6 +1,8 @@
 package org.route.checkout;
 
 
+import org.route.common.Money;
+import org.route.common.Money;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,6 @@ public class TaxCalculator {
       this.VAT_RATE = vatRate;
   }
   public BigDecimal calculate(BigDecimal subtotal){
-      return subtotal.multiply(VAT_RATE);
+      return Money.scale(subtotal.multiply(VAT_RATE));
   }
 }

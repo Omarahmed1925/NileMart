@@ -1,4 +1,6 @@
 package org.route.model;
 
-public record OrderLine(String sku, String name, int quantity, double linePrice) {
+import java.math.BigDecimal;
+
+public record OrderLine(String sku, String name, int quantity, BigDecimal linePrice) {
 }

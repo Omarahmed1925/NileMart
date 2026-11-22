@@ -11,7 +11,7 @@ public class NotFoundException extends StoreException{
     }
 
     @Override
-    public int getStatusCode() {
+    public int status() {
         return 404;
     }
 }
