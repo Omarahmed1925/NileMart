@@ -1,42 +1,33 @@
 package org.route;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.math.BigDecimal;
+import org.route.Cart.CartRegistry;
+import org.route.config.AppConfig;
+import org.route.console.StoreConsole;
+import org.route.Service.ProductService;
+import org.route.checkout.CheckoutService;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 public class Main {
-    void main(){
 
-        //        var context = new ClassPathXmlApplicationContext("beans.xml");
+    public static void main(String[] args) {
 
+        var context = new AnnotationConfigWebApplicationContext();
 
-//        StandardPricingService standard = context.getBean(StandardPricingService.class);
-//        StandardPricingService standard2 = context.getBean(StandardPricingService.class);
+        context.register(AppConfig.class);
 
-//        ProductService p = context.getBean(ProductService.class);
-//
-//        System.out.println(p);
+        try (context;
+             WebServer server = new WebServer(context, 8080)) {
 
-        var context = new AnnotationConfigApplicationContext(AppConfig.class);
-//        var context2 = new AnnotationConfigApplicationContext(AppConfig.class);
+            server.start();
 
-//        StandardPricingService standard = context.getBean(StandardPricingService.class);
-//        StandardPricingService standard2 = context2.getBean(StandardPricingService.class);
+            StoreConsole console = new StoreConsole(
+                    context.getBean(CartRegistry.class),
+                    context.getBean(ProductService.class),
+                    context.getBean(CheckoutService.class)
+            );
 
-//        System.out.println(standard == standard2);
-//        ProductService p = context.getBean(ProductService.class);
-//        System.out.println(standard);
-
-        ProductService productService = context.getBean(ProductService.class);
-
-        System.out.println(productService);
-
-        Product product = Product.builder()
-                .price(BigDecimal.valueOf(100))
-                .build();
-
-        System.out.println(productService.getPrice("PH-SAM-S25", 2));
-
+            console.run();
+        }
     }
 }
